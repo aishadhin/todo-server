@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const cors = require("cors");
 const port = process.env.PORT || 5000;
@@ -31,12 +31,11 @@ async function run() {
       res.send(result);
     });
 
-
-    app.put("/all-task/:id", async (req, res) => {
+    app.put("/update-task/:id", async (req, res) => {
       const id = req.params.id;
       const data = req.body;
       const filter = { _id: ObjectId(id) };
-      const option = {upsert:true}
+      const option = { upsert: true };
       const updateDoc = {
         $set: data,
       };
@@ -44,10 +43,35 @@ async function run() {
       res.send(result);
     });
 
+    app.put("/task-complete/:id", async (req, res) => {
+      const id = req.params.id;
 
+      const data = req.body;
 
+      const filter = { _id: ObjectId(id) };
 
+      const options = { upsert: true };
 
+      const updatedDoc = {
+        $set: data,
+      };
+
+      const result = await taskCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+
+      res.send(result);
+    });
+
+    app.get("/completed-tasks", async (req, res) => {
+      const task = req.query.task;
+
+      const result = await taskCollection.find({ task: task }).toArray();
+
+      res.send(result);
+    });
   } finally {
   }
 }
